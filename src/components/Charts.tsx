@@ -28,7 +28,6 @@ import {
   Layers
 } from 'lucide-react';
 
-// Alle benötigen Chart.js Elemente registrieren (verhindert den Absturz auf GitHub Pages)
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -53,41 +52,38 @@ interface ChartsProps {
 export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMode }) => {
   const [activeTab, setActiveTab] = useState<'energy' | 'pv' | 'cost' | 'heatpump' | 'water' | 'co2'>('energy');
 
-  // Chart text & grid colors based on dark mode
   const textColor = darkMode ? '#94a3b8' : '#64748b';
   const gridColor = darkMode ? 'rgba(51, 65, 85, 0.4)' : 'rgba(226, 232, 240, 0.8)';
   const tooltipBg = darkMode ? '#0f172a' : '#ffffff';
   const tooltipText = darkMode ? '#f8fafc' : '#0f172a';
   const tooltipBorder = darkMode ? '#334155' : '#e2e8f0';
 
-  // Labels (Date strings: e.g. "01.01.24 - 01.02.24" or month name)
   const labels = periods.map((p) => {
     const end = new Date(p.endDate);
     return end.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' });
   });
 
-  // 1. Energiebilanz: Strombedarf gedeckt durch Netzbezug, PV-Direkt, Speicher
   const energyFlowData = {
     labels,
     datasets: [
       {
         label: 'Netzbezug (kWh)',
         data: periods.map((p) => p.gridImportKwh),
-        backgroundColor: '#3b82f6', // blue
+        backgroundColor: '#3b82f6',
         borderRadius: 4,
         stack: 'demand',
       },
       {
         label: 'PV-Direktverbrauch (kWh)',
         data: periods.map((p) => p.pvSelfConsumptionKwh),
-        backgroundColor: '#eab308', // yellow
+        backgroundColor: '#eab308',
         borderRadius: 4,
         stack: 'demand',
       },
       {
         label: 'Speicherentladung (kWh)',
         data: periods.map((p) => p.batteryDischargeKwh),
-        backgroundColor: '#10b981', // green
+        backgroundColor: '#10b981',
         borderRadius: 4,
         stack: 'demand',
       },
@@ -95,7 +91,7 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
         label: 'Autarkiegrad (%)',
         data: periods.map((p) => p.autarkyPct),
         type: 'line' as const,
-        borderColor: '#f97316', // orange
+        borderColor: '#f97316',
         backgroundColor: '#f97316',
         borderWidth: 3,
         pointRadius: 4,
@@ -106,32 +102,30 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
     ],
   };
 
-  // 2. PV & Speicher Aufteilung (Erzeugung = Direktverbrauch + Speicherladung + Einspeisung)
   const pvSplitData = {
     labels,
     datasets: [
       {
         label: 'Direkter Eigenverbrauch (kWh)',
         data: periods.map((p) => p.pvSelfConsumptionKwh),
-        backgroundColor: '#eab308', // yellow
+        backgroundColor: '#eab308',
         borderRadius: 4,
       },
       {
         label: 'Speicherladung (kWh)',
         data: periods.map((p) => p.batteryChargeKwh),
-        backgroundColor: '#6366f1', // indigo
+        backgroundColor: '#6366f1',
         borderRadius: 4,
       },
       {
         label: 'Netz-Einspeisung (kWh)',
         data: periods.map((p) => p.pvExportKwh),
-        backgroundColor: '#06b6d4', // cyan
+        backgroundColor: '#06b6d4',
         borderRadius: 4,
       },
     ],
   };
 
-  // 3. Kostenaufschlüsselung (Donut Chart)
   const costDonutData = {
     labels: ['Strom (Netzbezug)', 'Wärmepumpe', 'Wasser & Abwasser', 'Grundgebühren'],
     datasets: [
@@ -149,7 +143,6 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
     ],
   };
 
-  // 4. Wärmepumpen-Effizienz & JAZ Verlauf
   const heatPumpData = {
     labels,
     datasets: [
@@ -182,7 +175,6 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
     ],
   };
 
-  // 5. CO₂-Einsparungsverlauf (Monatlich & Kumuliert)
   let runningCo2 = 0;
   const cumulativeCo2Data = periods.map((p) => {
     runningCo2 += p.co2SavedTotalKg;
@@ -215,7 +207,6 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
     ],
   };
 
-  // 6. Wasserverbrauch (m³)
   const waterData = {
     labels,
     datasets: [
@@ -275,7 +266,6 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
 
   return (
     <div className="space-y-6">
-      {/* Chart Selector Tabs */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-xl border bg-white dark:bg-slate-800/90 border-slate-200 dark:border-slate-700/80 shadow-sm">
         {[
           { id: 'energy', label: 'Energie- & Autarkieverlauf', icon: BarChart3 },
@@ -304,9 +294,7 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
         })}
       </div>
 
-      {/* Main Chart View */}
       <div className="rounded-2xl border p-5 sm:p-6 bg-white dark:bg-slate-800/90 border-slate-200 dark:border-slate-700/80 shadow-sm">
-        {/* 1. Energie- und Autarkieverlauf */}
         {activeTab === 'energy' && (
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
@@ -366,7 +354,6 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
           </div>
         )}
 
-        {/* 2. PV- & Speicher-Bilanz */}
         {activeTab === 'pv' && (
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
@@ -404,7 +391,6 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
           </div>
         )}
 
-        {/* 3. Kostenaufschlüsselung (Donut) */}
         {activeTab === 'cost' && (
           <div>
             <div className="mb-6">
@@ -447,7 +433,6 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
                 />
               </div>
 
-              {/* Cost Breakdown Details */}
               <div className="space-y-3">
                 <div className="p-3.5 rounded-xl border border-blue-500/30 bg-blue-500/5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -476,4 +461,166 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
                     <span className="w-3.5 h-3.5 rounded-md bg-cyan-500" />
                     <div>
                       <span className="text-sm font-semibold text-slate-900 dark:text-white">Wasser & Abwasser</span>
-                      <p className="text-xs text-slate-400">{summary.totalWaterM3} m³ Verbrauch inkl. Kanalgeb
+                      <p className="text-xs text-slate-400">{summary.totalWaterM3} m³ Verbrauch inkl. Kanalgebühren</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(summary.totalCostWater)}</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-purple-500/30 bg-purple-500/5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="w-3.5 h-3.5 rounded-md bg-purple-500" />
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900 dark:text-white">Fixe Grundgebühren</span>
+                      <p className="text-xs text-slate-400">Zählermiete, Messstellenbetrieb & Grundpreise</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(summary.totalBaseFees)}</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-semibold text-emerald-400">Abzüglich Einspeisevergütung</span>
+                    <p className="text-xs text-slate-400">Vergütung nach EEG für Solar-Einspeisung</p>
+                  </div>
+                  <span className="text-sm font-bold text-emerald-400">-{formatCurrency(summary.totalIncomeGridExport)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'heatpump' && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Wärmepumpen Effizienz & JAZ Monatsverlauf
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Verhältnis von bereitgestellter Heizenergie zu aufgewendetem Antriebsstrom
+                </p>
+              </div>
+            </div>
+
+            <div className="h-80 sm:h-96">
+              <Bar
+                data={heatPumpData as any}
+                options={{
+                  ...commonOptions,
+                  scales: {
+                    x: {
+                      grid: { color: gridColor },
+                      ticks: { color: textColor },
+                    },
+                    yHeat: {
+                      type: 'linear',
+                      position: 'left',
+                      grid: { color: gridColor },
+                      ticks: { color: textColor },
+                      title: { display: true, text: 'Wärme / Strom (kWh)', color: textColor },
+                    },
+                    yJaz: {
+                      type: 'linear',
+                      position: 'right',
+                      min: 0,
+                      max: 6,
+                      grid: { drawOnChartArea: false },
+                      ticks: { color: '#10b981' },
+                      title: { display: true, text: 'JAZ (Effizienz)', color: '#10b981' },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'co2' && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Monatliche & Kumulierte CO₂-Einsparung
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Berechnung basierend auf PV-Eigenstrom, Netzeinspeisung und Wärmepumpe gegenüber Referenz
+                </p>
+              </div>
+            </div>
+
+            <div className="h-80 sm:h-96">
+              <Bar
+                data={co2Data as any}
+                options={{
+                  ...commonOptions,
+                  scales: {
+                    x: {
+                      grid: { color: gridColor },
+                      ticks: { color: textColor },
+                    },
+                    yMonthly: {
+                      type: 'linear',
+                      position: 'left',
+                      grid: { color: gridColor },
+                      ticks: { color: textColor },
+                      title: { display: true, text: 'Monatlich (kg CO₂)', color: textColor },
+                    },
+                    yCum: {
+                      type: 'linear',
+                      position: 'right',
+                      grid: { drawOnChartArea: false },
+                      ticks: { color: '#059669' },
+                      title: { display: true, text: 'Kumuliert (kg CO₂)', color: '#059669' },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'water' && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Kaltwasser- & Abwasserverbrauch
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Kubikmeter (m³) Wasserverbrauch und daraus resultierende Kosten je Ableseintervall
+                </p>
+              </div>
+            </div>
+
+            <div className="h-80 sm:h-96">
+              <Bar
+                data={waterData as any}
+                options={{
+                  ...commonOptions,
+                  scales: {
+                    x: {
+                      grid: { color: gridColor },
+                      ticks: { color: textColor },
+                    },
+                    y: {
+                      grid: { color: gridColor },
+                      ticks: { color: textColor },
+                      title: { display: true, text: 'Wasser (m³)', color: textColor },
+                    },
+                    yCost: {
+                      position: 'right',
+                      grid: { drawOnChartArea: false },
+                      ticks: { color: '#0284c7', callback: (v) => `${v} €` },
+                      title: { display: true, text: 'Kosten (€)', color: '#0284c7' },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
