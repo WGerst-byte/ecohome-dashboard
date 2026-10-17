@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  LineController
+} from 'chart.js';
 import '../utils/chartSetup';
 import { ConsumptionPeriod, DashboardSummary, TariffConfig } from '../types';
 import { formatCurrency, formatNumber, formatDate } from '../utils/calculations';
@@ -13,6 +27,21 @@ import {
   Leaf,
   Layers
 } from 'lucide-react';
+
+// Alle benötigen Chart.js Elemente registrieren (verhindert den Absturz auf GitHub Pages)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  LineController
+);
 
 interface ChartsProps {
   periods: ConsumptionPeriod[];
@@ -447,169 +476,4 @@ export const Charts: React.FC<ChartsProps> = ({ periods, summary, tariff, darkMo
                     <span className="w-3.5 h-3.5 rounded-md bg-cyan-500" />
                     <div>
                       <span className="text-sm font-semibold text-slate-900 dark:text-white">Wasser & Abwasser</span>
-                      <p className="text-xs text-slate-400">{summary.totalWaterM3} m³ Verbrauch inkl. Kanalgebühren</p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(summary.totalCostWater)}</span>
-                </div>
-
-                <div className="p-3.5 rounded-xl border border-purple-500/30 bg-purple-500/5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="w-3.5 h-3.5 rounded-md bg-purple-500" />
-                    <div>
-                      <span className="text-sm font-semibold text-slate-900 dark:text-white">Fixe Grundgebühren</span>
-                      <p className="text-xs text-slate-400">Zählermiete, Messstellenbetrieb & Grundpreise</p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(summary.totalBaseFees)}</span>
-                </div>
-
-                <div className="p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-semibold text-emerald-400">Abzüglich Einspeisevergütung</span>
-                    <p className="text-xs text-slate-400">Vergütung nach EEG für Solar-Einspeisung</p>
-                  </div>
-                  <span className="text-sm font-bold text-emerald-400">-{formatCurrency(summary.totalIncomeGridExport)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 4. Wärmepumpen-Effizienz */}
-        {activeTab === 'heatpump' && (
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Wärmepumpen Effizienz & JAZ Monatsverlauf
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Verhältnis von bereitgestellter Heizenergie zu aufgewendetem Antriebsstrom
-                </p>
-              </div>
-            </div>
-
-            <div className="h-80 sm:h-96">
-              <Bar
-                data={heatPumpData as any}
-                options={{
-                  ...commonOptions,
-                  scales: {
-                    x: {
-                      grid: { color: gridColor },
-                      ticks: { color: textColor },
-                    },
-                    yHeat: {
-                      type: 'linear',
-                      position: 'left',
-                      grid: { color: gridColor },
-                      ticks: { color: textColor },
-                      title: { display: true, text: 'Wärme / Strom (kWh)', color: textColor },
-                    },
-                    yJaz: {
-                      type: 'linear',
-                      position: 'right',
-                      min: 0,
-                      max: 6,
-                      grid: { drawOnChartArea: false },
-                      ticks: { color: '#10b981' },
-                      title: { display: true, text: 'JAZ (Effizienz)', color: '#10b981' },
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* 5. CO₂-Einsparungsverlauf */}
-        {activeTab === 'co2' && (
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Monatliche & Kumulierte CO₂-Einsparung
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Berechnung basierend auf PV-Eigenstrom, Netzeinspeisung und Wärmepumpe gegenüber Referenz
-                </p>
-              </div>
-            </div>
-
-            <div className="h-80 sm:h-96">
-              <Bar
-                data={co2Data as any}
-                options={{
-                  ...commonOptions,
-                  scales: {
-                    x: {
-                      grid: { color: gridColor },
-                      ticks: { color: textColor },
-                    },
-                    yMonthly: {
-                      type: 'linear',
-                      position: 'left',
-                      grid: { color: gridColor },
-                      ticks: { color: textColor },
-                      title: { display: true, text: 'Monatlich (kg CO₂)', color: textColor },
-                    },
-                    yCum: {
-                      type: 'linear',
-                      position: 'right',
-                      grid: { drawOnChartArea: false },
-                      ticks: { color: '#059669' },
-                      title: { display: true, text: 'Kumuliert (kg CO₂)', color: '#059669' },
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* 6. Wasser & Abwasser */}
-        {activeTab === 'water' && (
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Kaltwasser- & Abwasserverbrauch
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Kubikmeter (m³) Wasserverbrauch und daraus resultierende Kosten je Ableseintervall
-                </p>
-              </div>
-            </div>
-
-            <div className="h-80 sm:h-96">
-              <Bar
-                data={waterData as any}
-                options={{
-                  ...commonOptions,
-                  scales: {
-                    x: {
-                      grid: { color: gridColor },
-                      ticks: { color: textColor },
-                    },
-                    y: {
-                      grid: { color: gridColor },
-                      ticks: { color: textColor },
-                      title: { display: true, text: 'Wasser (m³)', color: textColor },
-                    },
-                    yCost: {
-                      position: 'right',
-                      grid: { drawOnChartArea: false },
-                      ticks: { color: '#0284c7', callback: (v) => `${v} €` },
-                      title: { display: true, text: 'Kosten (€)', color: '#0284c7' },
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+                      <p className="text-xs text-slate-400">{summary.totalWaterM3} m³ Verbrauch inkl. Kanalgeb
