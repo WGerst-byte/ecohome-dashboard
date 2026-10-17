@@ -50,3 +50,45 @@ export function saveTariff(tariff: TariffConfig): void {
     console.error('Fehler beim Speichern:', e);
   }
 }
+
+// --- Wiederhergestellte CSV Funktionen ---
+
+export function exportToCsv(readings: MeterReading[]): void {
+  if (!readings || readings.length === 0) return;
+  
+  const keys = Object.keys(readings[0]);
+  const csvContent = [
+    keys.join(','),
+    ...readings.map(row => keys.map(k => (row as any)[k]).join(','))
+  ].join('\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'ecohome_export.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+export function importFromCsv(csvText: string): MeterReading[] {
+  try {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    if (lines.length < 2) return [];
+    
+    const headers = lines[0].split(',');
+    return lines.slice(1).map(line => {
+      const values = line.split(',');
+      const obj: any = {};
+      headers.forEach((header, index) => {
+        const val = values[index];
+        // Konvertiere Zahlenwerte, belasse Strings als Strings
+        obj[header.trim()] = !isNaN(Number(val)) && val.trim() !== '' ? Number(val) : val;
+      });
+      return obj as MeterReading;
+    });
+  } catch (error) {
+    console.error('Fehler beim CSV-Import:', error);
+    return [];
+  }
+}
